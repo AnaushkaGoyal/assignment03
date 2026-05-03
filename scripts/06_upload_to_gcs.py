@@ -1,35 +1,34 @@
-"""
+﻿"""
     Stretch challenge: Upload merged hourly + site location data to GCS.
-
-    This script uploads the denormalized (merged) files produced by
-    06_prepare.py to GCS with a hive-partitioned folder structure.
-
-    Prerequisites:
-        - Run `gcloud auth application-default login` to authenticate.
-        - Part 6 prepare script (06_prepare.py) should be complete.
-
-    Usage:
-        python scripts/06_upload_to_gcs.py
 """
 
 import pathlib
-
+from google.cloud import storage
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / 'data'
-
-# TODO: Update this to your bucket name
-BUCKET_NAME = 'musa5090-s26-yourname-data'
+BUCKET_NAME = 'musa5090-s26-goyal-data'
+PROJECT_ID = 'musa-cloudcomputing-spring2026'
+PREPARED_MERGED = DATA_DIR / 'prepared' / 'hourly_with_sites'
 
 
 def upload_merged_data():
-    """Upload merged hourly data to GCS with hive-partitioned folder structure.
+    client = storage.Client(project=PROJECT_ID)
+    bucket = client.get_bucket(BUCKET_NAME)
 
-    Expected GCS structure:
-        gs://<bucket>/air_quality/hourly_with_sites/csv/airnow_date=2024-07-01/data.csv
-        gs://<bucket>/air_quality/hourly_with_sites/jsonl/airnow_date=2024-07-01/data.jsonl
-        gs://<bucket>/air_quality/hourly_with_sites/geoparquet/airnow_date=2024-07-01/data.geoparquet
-    """
-    raise NotImplementedError("Implement this function to upload merged data to GCS.")
+    for local_path in sorted(PREPARED_MERGED.iterdir()):
+        if not local_path.is_file():
+            continue
+
+        date_str = local_path.stem
+        ext = local_path.suffix.lstrip('.')
+
+        blob_name = (
+            f'air_quality/hourly_with_sites/{ext}/'
+            f'airnow_date={date_str}/data.{ext}'
+        )
+        blob = bucket.blob(blob_name)
+        blob.upload_from_filename(str(local_path))
+        print(f'  Uploaded {blob_name}')
 
 
 if __name__ == '__main__':
