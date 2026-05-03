@@ -1,5 +1,16 @@
-﻿"""
+"""
     Script to upload prepared data files to Google Cloud Storage (GCS).
+
+    This script uploads the transformed files from data/prepared/ to a
+    GCS bucket, preserving the folder structure so that BigQuery can
+    use wildcard URIs to create external tables across multiple files.
+
+    Prerequisites:
+        - Run `gcloud auth application-default login` to authenticate.
+        - Create a GCS bucket (manually or in this script).
+
+    Usage:
+        python scripts/03_upload_to_gcs.py
 """
 
 import pathlib
@@ -37,3 +48,4 @@ def upload_prepared_data():
 if __name__ == '__main__':
     upload_prepared_data()
     print('Done.')
+'@ | Set-Content scripts/03_upload_to_gcs.py -Encoding UTF8
